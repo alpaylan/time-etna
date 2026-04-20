@@ -365,10 +365,7 @@ impl Duration {
     /// ```
     #[inline]
     pub const fn abs(self) -> Self {
-        match self.seconds.checked_abs() {
-            Some(seconds) => Self::new_ranged_unchecked(seconds, self.nanoseconds.abs()),
-            None => Self::MAX,
-        }
+        Self::new_ranged_unchecked(self.seconds.saturating_abs(), self.nanoseconds)
     }
 
     /// Convert the existing `Duration` to a `std::time::Duration` and its sign. This returns a
