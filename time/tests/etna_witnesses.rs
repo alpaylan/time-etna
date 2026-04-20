@@ -44,8 +44,8 @@ fn witness_duration_abs_case_min_negative_nanos() {
 #[test]
 fn witness_duration_abs_case_negative_one_second() {
     expect_pass(
-        property_duration_abs_matches_model(-1, 0),
-        "abs(-1 s, 0 ns)",
+        property_duration_abs_matches_model(-1, -1),
+        "abs(-1 s, -1 ns)",
     );
 }
 
@@ -116,9 +116,9 @@ fn witness_utc_offset_ordering_case_negative_zero() {
 }
 
 #[test]
-fn witness_utc_offset_ordering_case_utc() {
+fn witness_utc_offset_ordering_case_pos_neg_seconds() {
     expect_pass(
-        property_utc_offset_ordering(0, 0),
-        "cmp(from_whole_seconds(0), from_whole_seconds(0))",
+        property_utc_offset_ordering(1, -1),
+        "cmp(from_whole_seconds(1), from_whole_seconds(-1))",
     );
 }

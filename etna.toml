@@ -44,7 +44,7 @@ witnesses = [
     "witness_utc_offset_ordering_case_neg_pos",
     "witness_utc_offset_ordering_case_negative_hour_positive_hour",
     "witness_utc_offset_ordering_case_negative_zero",
-    "witness_utc_offset_ordering_case_utc",
+    "witness_utc_offset_ordering_case_pos_neg_seconds",
 ]
 frameworks = ["proptest", "quickcheck", "crabcheck", "hegel"]
 files = ["time/src/utc_offset.rs"]
