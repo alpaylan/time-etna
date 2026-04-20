@@ -102,8 +102,8 @@ impl PartialOrd for UtcOffset {
 impl Ord for UtcOffset {
     #[inline]
     fn cmp(&self, other: &Self) -> Ordering {
-        self.as_i32_for_comparison()
-            .cmp(&other.as_i32_for_comparison())
+        self.as_u32_for_equality()
+            .cmp(&other.as_u32_for_equality())
     }
 }
 
@@ -414,7 +414,7 @@ impl UtcOffset {
     /// ```
     #[inline]
     pub const fn is_positive(self) -> bool {
-        self.as_i32_for_comparison() > Self::UTC.as_i32_for_comparison()
+        self.hours.get() > 0 || self.minutes.get() > 0 || self.seconds.get() > 0
     }
 
     /// Check if the offset is negative, or west of UTC.
@@ -427,7 +427,7 @@ impl UtcOffset {
     /// ```
     #[inline]
     pub const fn is_negative(self) -> bool {
-        self.as_i32_for_comparison() < Self::UTC.as_i32_for_comparison()
+        self.hours.get() < 0 || self.minutes.get() < 0 || self.seconds.get() < 0
     }
 
     /// Attempt to obtain the system's UTC offset at a known moment in time. If the offset cannot be
