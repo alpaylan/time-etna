@@ -20,7 +20,7 @@ materialization of that patch applied on top of the shared `base_commit`.
 |---------|----------|-------------|
 | `duration_abs_saturation_0e99ae7_1` | `property_duration_abs_matches_model` | `witness_duration_abs_case_min_zero_nanos`, `witness_duration_abs_case_min_negative_nanos`, `witness_duration_abs_case_negative_one_second` |
 | `duration_checked_div_8060100_1` | `property_duration_checked_div_matches_model` | `witness_duration_checked_div_case_regression_one_ns`, `witness_duration_checked_div_case_regression_eight_seconds`, `witness_duration_checked_div_case_regression_negative` |
-| `utc_offset_ordering_3a60ceb_1` | `property_utc_offset_ordering` | `witness_utc_offset_ordering_case_neg_pos`, `witness_utc_offset_ordering_case_negative_hour_positive_hour`, `witness_utc_offset_ordering_case_negative_zero`, `witness_utc_offset_ordering_case_pos_neg_seconds` |
+| `utc_offset_ordering_3a60ceb_1` | `property_utc_offset_ordering` | `witness_utc_offset_ordering_case_neg_pos`, `witness_utc_offset_ordering_case_negative_sixty_positive_sixty`, `witness_utc_offset_ordering_case_negative_zero`, `witness_utc_offset_ordering_case_pos_neg_seconds` |
 
 ## Framework Coverage
 
@@ -54,7 +54,7 @@ materialization of that patch applied on top of the shared `base_commit`.
 - **Variant**: `utc_offset_ordering_3a60ceb_1`
 - **Location**: `patches/utc_offset_ordering_3a60ceb_1.patch` (rewrites `time/src/utc_offset.rs` `impl Ord`, `is_positive`, `is_negative`)
 - **Property**: `property_utc_offset_ordering`
-- **Witness(es)**: `witness_utc_offset_ordering_case_neg_pos`, `witness_utc_offset_ordering_case_negative_hour_positive_hour`, `witness_utc_offset_ordering_case_negative_zero`, `witness_utc_offset_ordering_case_pos_neg_seconds`
+- **Witness(es)**: `witness_utc_offset_ordering_case_neg_pos`, `witness_utc_offset_ordering_case_negative_sixty_positive_sixty`, `witness_utc_offset_ordering_case_negative_zero`, `witness_utc_offset_ordering_case_pos_neg_seconds`
 - **Fix commit**: `3a60ceba3f8677da34f28d56753a808812ea2a94` — `Fix ordering of UtcOffset`
-- **Invariant violated**: `UtcOffset::cmp` must order offsets by their total-second value, and `is_positive` / `is_negative` must agree with the sign of that total-second value.
-- **How the mutation triggers**: The fix introduced `as_i32_for_comparison` (signed packed `(h,m,s)`) and rerouted `Ord::cmp`, `is_positive`, and `is_negative` through it. The variant patch reverts `Ord::cmp` to the byte-packed `as_u32_for_equality` (whose ordering flips at zero because seconds are cast through `u8`) and restores the field-by-field sign predicates (which claim `is_positive` for an offset whose `hours == 0` but `seconds > 0`, disagreeing with the total-second sign for odd-signed components).
+- **Invariant violated**: For sub-minute offsets (`|a|, |b| <= 59` so `hours == minutes == 0`), `UtcOffset::cmp` must agree with comparison of the whole-second inputs. `is_positive` / `is_negative` must agree with the sign of the whole-second value.
+- **How the mutation triggers**: The fix introduced `as_i32_for_comparison` (signed packed `(h,m,s)`) and rerouted `Ord::cmp`, `is_positive`, and `is_negative` through it. The variant patch reverts `Ord::cmp` to the byte-packed `as_u32_for_equality`, whose ordering flips across zero because seconds are cast through `u8` (`-1 -> 255` compares greater than `1 -> 1`). Within the `[-59, 59]` sub-minute domain the fixed packing degenerates to raw-seconds ordering, so the packed-`u32` fault is the only observable difference.

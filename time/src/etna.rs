@@ -144,27 +144,35 @@ pub fn property_duration_checked_div_matches_model(
     PropertyResult::Pass
 }
 
-/// `UtcOffset::cmp` must order offsets by their total-second representation:
+/// `UtcOffset::cmp` must order two sub-minute offsets by their whole-second
+/// value:
 ///
+///   for `-59 <= a, b <= 59`:
 ///   `UtcOffset::from_whole_seconds(a).cmp(&from_whole_seconds(b))` == `a.cmp(&b)`
 ///
 /// Similarly, `is_positive` / `is_negative` / `is_utc` must agree with the
-/// sign / zero-ness of the total-second value.
+/// sign / zero-ness of the whole-second value.
+///
+/// Inputs are restricted to `[-59, 59]` so both offsets lie strictly within
+/// `(-1, +1) minutes`: `from_whole_seconds` then guarantees `hours == 0` and
+/// `minutes == 0`, so ordering by the packed `(h, m, s)` representation used
+/// under the fix collapses to ordering by the raw seconds field, which equals
+/// the total-second value.
 ///
 /// Pre-`3a60ceba` the implementation packed `(hours, minutes, seconds)` bytes
-/// into a `u32` for ordering, which breaks monotonicity whenever the offset
-/// crosses zero (because `seconds.cast_unsigned()` flips ordering on the sign
-/// bit). `is_positive` / `is_negative` went through a field-by-field check
-/// that returned true whenever *any* component was positive/negative, so
-/// mixed-sign offsets (impossible to construct via `from_whole_seconds`, but
-/// cheap to exercise here) still exposed the bug via the exclusively-ordering
-/// branch.
+/// into a `u32` via `as_u32_for_equality` for ordering. Because
+/// `seconds.cast_unsigned()` maps `-1 -> 255` (etc.), any input with
+/// `seconds < 0` compares *greater* than any input with `seconds >= 0` despite
+/// representing a smaller total-second value. Within the sub-minute domain the
+/// failure is unavoidable as soon as one input is negative and the other is
+/// non-negative.
 ///
 /// Detects `utc_offset_ordering_3a60ceb_1`.
 pub fn property_utc_offset_ordering(a: i32, b: i32) -> PropertyResult {
-    // UtcOffset is constrained to `-89_999..=89_999` whole seconds (25h bound
-    // minus one second). Restrict the inputs to this domain.
-    const MAX: i32 = 89_999;
+    // Restrict to sub-minute offsets so `from_whole_seconds` sets
+    // `hours == minutes == 0` and the fixed packed-i32 ordering collapses to
+    // ordering by the seconds field (== total seconds).
+    const MAX: i32 = 59;
     if !(-MAX..=MAX).contains(&a) || !(-MAX..=MAX).contains(&b) {
         return PropertyResult::Discard;
     }

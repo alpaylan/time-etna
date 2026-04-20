@@ -42,7 +42,7 @@ patch = "patches/utc_offset_ordering_3a60ceb_1.patch"
 source_commit = "3a60ceba3f8677da34f28d56753a808812ea2a94"
 witnesses = [
     "witness_utc_offset_ordering_case_neg_pos",
-    "witness_utc_offset_ordering_case_negative_hour_positive_hour",
+    "witness_utc_offset_ordering_case_negative_sixty_positive_sixty",
     "witness_utc_offset_ordering_case_negative_zero",
     "witness_utc_offset_ordering_case_pos_neg_seconds",
 ]

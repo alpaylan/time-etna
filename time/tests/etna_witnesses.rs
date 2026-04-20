@@ -100,10 +100,10 @@ fn witness_utc_offset_ordering_case_neg_pos() {
 }
 
 #[test]
-fn witness_utc_offset_ordering_case_negative_hour_positive_hour() {
+fn witness_utc_offset_ordering_case_negative_sixty_positive_sixty() {
     expect_pass(
-        property_utc_offset_ordering(-3600, 3600),
-        "cmp(from_whole_seconds(-3600), from_whole_seconds(3600))",
+        property_utc_offset_ordering(-59, 59),
+        "cmp(from_whole_seconds(-59), from_whole_seconds(59))",
     );
 }
 

@@ -21,7 +21,7 @@ single JSON line printed to stdout. A successful detection is a `status:
 | 007  | `duration_checked_div_8060100_1` | crabcheck | `property_duration_checked_div_matches_model` | `witness_duration_checked_div_case_regression_negative` | `cargo run --release --bin etna -- crabcheck DurationCheckedDivMatchesModel` |
 | 008  | `duration_checked_div_8060100_1` | hegel     | `property_duration_checked_div_matches_model` | `witness_duration_checked_div_case_regression_one_ns` | `cargo run --release --bin etna -- hegel DurationCheckedDivMatchesModel` |
 | 009  | `utc_offset_ordering_3a60ceb_1` | proptest  | `property_utc_offset_ordering` | `witness_utc_offset_ordering_case_neg_pos` | `cargo run --release --bin etna -- proptest UtcOffsetOrdering` |
-| 010  | `utc_offset_ordering_3a60ceb_1` | quickcheck | `property_utc_offset_ordering` | `witness_utc_offset_ordering_case_negative_hour_positive_hour` | `cargo run --release --bin etna -- quickcheck UtcOffsetOrdering` |
+| 010  | `utc_offset_ordering_3a60ceb_1` | quickcheck | `property_utc_offset_ordering` | `witness_utc_offset_ordering_case_negative_sixty_positive_sixty` | `cargo run --release --bin etna -- quickcheck UtcOffsetOrdering` |
 | 011  | `utc_offset_ordering_3a60ceb_1` | crabcheck | `property_utc_offset_ordering` | `witness_utc_offset_ordering_case_negative_zero` | `cargo run --release --bin etna -- crabcheck UtcOffsetOrdering` |
 | 012  | `utc_offset_ordering_3a60ceb_1` | hegel     | `property_utc_offset_ordering` | `witness_utc_offset_ordering_case_pos_neg_seconds` | `cargo run --release --bin etna -- hegel UtcOffsetOrdering` |
 
@@ -37,7 +37,7 @@ Base build: passes. Variant-active build: fails.
 - `witness_duration_checked_div_case_regression_eight_seconds` — `checked_div(Duration::new(8, 1), 7)` must reconstruct within `|7|` ns
 - `witness_duration_checked_div_case_regression_negative` — `checked_div(Duration::new(-1, -1), -7)` must reconstruct within `|-7|` ns (negative dividend and divisor)
 - `witness_utc_offset_ordering_case_neg_pos` — `cmp(from_whole_seconds(-1), from_whole_seconds(1))` must be `Less`
-- `witness_utc_offset_ordering_case_negative_hour_positive_hour` — `cmp(from_whole_seconds(-3600), from_whole_seconds(3600))` must be `Less`
+- `witness_utc_offset_ordering_case_negative_sixty_positive_sixty` — `cmp(from_whole_seconds(-59), from_whole_seconds(59))` must be `Less`
 - `witness_utc_offset_ordering_case_negative_zero` — `cmp(from_whole_seconds(-1), from_whole_seconds(0))` must be `Less`; `is_negative` must hold
 - `witness_utc_offset_ordering_case_pos_neg_seconds` — `cmp(from_whole_seconds(1), from_whole_seconds(-1))` must be `Greater` (buggy byte-packed comparison flips the sign because `seconds` casts through `u8`)
 
