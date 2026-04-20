@@ -1115,16 +1115,16 @@ impl Duration {
     /// ```
     #[inline]
     pub const fn checked_div(self, rhs: i32) -> Option<Self> {
-        let (secs, extra_secs) = (
-            const_try_opt!(self.seconds.checked_div(rhs as i64)),
-            self.seconds % (rhs as i64),
-        );
-        let (mut nanos, extra_nanos) = (self.nanoseconds.get() / rhs, self.nanoseconds.get() % rhs);
-        nanos += ((extra_secs * (Nanosecond::per_t::<i64>(Second)) + extra_nanos as i64)
-            / (rhs as i64)) as i32;
+        let seconds = const_try_opt!(self.seconds.checked_div(rhs as i64));
+        let carry = self.seconds - seconds * (rhs as i64);
+        let extra_nanos =
+            const_try_opt!((carry * Nanosecond::per_t::<i64>(Second)).checked_div(rhs as i64));
+        let nanoseconds =
+            const_try_opt!(self.nanoseconds.get().checked_div(rhs)) + (extra_nanos as i32);
 
-        // Safety: `nanoseconds` is in range.
-        unsafe { Some(Self::new_unchecked(secs, nanos)) }
+        // Safety: TODO may not be safe? `nanoseconds` could overflow past a billion on final
+        // addition?
+        unsafe { Some(Self::new_unchecked(seconds, nanoseconds)) }
     }
 
     /// Computes `-self`, returning `None` if the result would overflow.
