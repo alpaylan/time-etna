@@ -98,6 +98,8 @@ pub mod convert {
 }
 mod date;
 mod duration;
+#[cfg(feature = "alloc")]
+pub mod etna;
 pub mod error;
 pub mod ext;
 #[cfg(any(feature = "formatting", feature = "parsing"))]

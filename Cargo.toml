@@ -24,6 +24,11 @@ num-conv = "0.2.0"
 num_threads = "0.1.2"
 # no longer used for anything, but needed for back-compatibility
 powerfmt = { version = "0.2.0", default-features = false }
+# ETNA: PBT framework deps used by src/bin/etna.rs.
+proptest = "1.6"
+crabcheck = { path = "/Users/akeles/Programming/projects/PbtBenchmark/crabcheck" }
+hegeltest = "0.3.7"
+qc_etna = { package = "quickcheck", path = "/Users/akeles/Programming/projects/PbtBenchmark/quickcheck", default-features = false, features = ["etna"] }
 quickcheck = { version = "1.0.3", default-features = false }
 quickcheck_macros = "1.0.0"
 rand08 = { package = "rand", version = "0.8.4", default-features = false }
@@ -43,6 +48,12 @@ debug = 0
 
 [profile.test]
 debug = 2
+
+# ETNA: keep debug assertions on in release so the internal `debug_assert!`s
+# (Duration invariants, deranged bounds) still panic under the framework
+# adapters, matching the witness behaviour.
+[profile.release]
+debug-assertions = true
 
 # Deny-by-default lints: These are lints that indicate a lack of compiler guarantees, future
 # incompatibility (with no guarantees in the meantime) introduce surprising behavior, or are likely

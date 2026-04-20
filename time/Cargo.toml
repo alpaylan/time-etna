@@ -40,7 +40,7 @@ parsing = ["time-macros?/parsing"]
 quickcheck = ["dep:quickcheck", "alloc", "deranged/quickcheck"]
 rand = ["rand08", "rand09", "rand010"]
 rand08 = ["dep:rand08", "deranged/rand08"]
-rand09 = ["dep:rand09", "deranged/rand09"]
+rand09 = ["deranged/rand09"]
 rand010 = ["dep:rand010", "deranged/rand010"]
 serde = ["dep:serde_core", "time-macros?/serde", "deranged/serde"]
 serde-human-readable = ["serde", "formatting", "parsing"]
@@ -57,11 +57,17 @@ num-conv.workspace = true
 powerfmt.workspace = true
 quickcheck = { workspace = true, optional = true }
 rand08 = { workspace = true, optional = true }
-rand09 = { workspace = true, optional = true }
+rand09 = { workspace = true }
 rand010 = { workspace = true, optional = true }
 serde_core = { workspace = true, optional = true }
 time-core.workspace = true
 time-macros = { workspace = true, optional = true }
+
+# ETNA framework dependencies — linked by src/bin/etna.rs only.
+proptest = { workspace = true }
+crabcheck = { workspace = true }
+hegeltest = { workspace = true }
+qc_etna = { workspace = true }
 
 [target.'cfg(target_family = "unix")'.dependencies]
 libc = { workspace = true, optional = true }
@@ -96,3 +102,11 @@ path = "benchmarks/main.rs"
 [[test]]
 name = "tests"
 path = "tests/integration/main.rs"
+
+[[bin]]
+name = "etna"
+path = "src/bin/etna.rs"
+
+[[test]]
+name = "etna_witnesses"
+path = "tests/etna_witnesses.rs"
