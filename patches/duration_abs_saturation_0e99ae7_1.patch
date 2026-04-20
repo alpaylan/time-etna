@@ -1,0 +1,25 @@
+Variant: duration_abs_saturation_0e99ae7_1
+Fix commit: 0e99ae76a8dbbbf34a4950be6e6396cc88cc6486
+Direction: fixed -> buggy (applying installs the bug).
+
+Reverts the saturating_abs guard introduced in 0e99ae76 so that when
+`self.seconds == i64::MIN` the `saturating_abs()` returns `i64::MAX` while the
+nanoseconds component is left as-is (possibly negative). Base tree uses
+`new_ranged_unchecked`; we restore the buggy shape using that same helper so
+the patch applies on the current tree.
+
+diff --git a/time/src/duration.rs b/time/src/duration.rs
+--- a/time/src/duration.rs
++++ b/time/src/duration.rs
+@@ -365,10 +365,7 @@ impl Duration {
+     /// ```
+     #[inline]
+     pub const fn abs(self) -> Self {
+-        match self.seconds.checked_abs() {
+-            Some(seconds) => Self::new_ranged_unchecked(seconds, self.nanoseconds.abs()),
+-            None => Self::MAX,
+-        }
++        Self::new_ranged_unchecked(self.seconds.saturating_abs(), self.nanoseconds.abs())
+     }
+
+     /// Convert the existing `Duration` to a `std::time::Duration` and its sign. This returns a

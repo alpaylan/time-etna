@@ -57,26 +57,29 @@ fn witness_duration_abs_case_negative_one_second() {
 // `|rhs| > 1`, so the reconstruction drifts by seconds rather than nanoseconds.
 
 #[test]
-fn witness_duration_checked_div_case_seven_by_two() {
+fn witness_duration_checked_div_case_regression_one_ns() {
+    // The exact regression test appended to tests/duration.rs by 80601003:
+    // `Duration::new(1, 1).checked_div(7)` must round to (0, 142_857_143), not
+    // (0, 142_857_142) — the old truncation formula drifts by one whole rhs.
     expect_pass(
-        property_duration_checked_div_matches_model(7, 0, 2),
-        "checked_div(7 s, /2)",
+        property_duration_checked_div_matches_model(1, 1, 7),
+        "checked_div(1 s 1 ns, /7)",
     );
 }
 
 #[test]
-fn witness_duration_checked_div_case_thousand_by_seven() {
+fn witness_duration_checked_div_case_regression_eight_seconds() {
     expect_pass(
-        property_duration_checked_div_matches_model(1000, 1, 7),
-        "checked_div(1000 s 1 ns, /7)",
+        property_duration_checked_div_matches_model(8, 1, 7),
+        "checked_div(8 s 1 ns, /7)",
     );
 }
 
 #[test]
-fn witness_duration_checked_div_case_one_by_three() {
+fn witness_duration_checked_div_case_regression_negative() {
     expect_pass(
-        property_duration_checked_div_matches_model(1, 0, 3),
-        "checked_div(1 s, /3)",
+        property_duration_checked_div_matches_model(-1, -1, -7),
+        "checked_div(-1 s -1 ns, /-7)",
     );
 }
 
