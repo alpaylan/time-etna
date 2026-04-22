@@ -1,50 +1,89 @@
-# ETNA workload index for the `time` crate.
-#
-# Every `[[variant]]` table describes a bug injected into the base HEAD by a
-# patch under `patches/`. A separate `etna/<variant>` branch commits the
-# mutation; the branch's first commit past base is the injection. The shared
-# base is the current `main` HEAD — each `git log etna/<variant>^ -1` prints
-# the same SHA (see validate check 6).
+name = "time"
+language = "rust"
+crate = "time"
+base_commit = "68739aacda2fbc2f004b291020d5352acb38137b"
 
-[[variant]]
-name = "duration_abs_saturation_0e99ae7_1"
-property = "duration_abs_matches_model"
-injection = "patch"
+[[tasks]]
+mutations = ["duration_abs_saturation_0e99ae7_1"]
+
+[tasks.source]
+repo = "https://github.com/time-rs/time"
+commits = ["0e99ae76a8dbbbf34a4950be6e6396cc88cc6486"]
+commit_subjects = ["Fix saturating behavior of Duration::abs"]
+summary = "`Duration::abs` delegated to `i64::saturating_abs` on the seconds field and ignored the nanoseconds, so `Duration::new(-5, -500_000_000).abs()` leaked a negative sub-second component; the fix handles the sign on both fields and saturates the `i64::MIN` case to `Duration::MAX`."
+
+[tasks.injection]
+kind = "patch"
+files = ["time/src/duration.rs"]
+locations = [{ file = "time/src/duration.rs" }]
 patch = "patches/duration_abs_saturation_0e99ae7_1.patch"
-source_commit = "0e99ae76a8dbbbf34a4950be6e6396cc88cc6486"
-witnesses = [
-    "witness_duration_abs_case_min_zero_nanos",
-    "witness_duration_abs_case_min_negative_nanos",
-    "witness_duration_abs_case_negative_one_second",
-]
-frameworks = ["proptest", "quickcheck", "crabcheck", "hegel"]
-files = ["time/src/duration.rs"]
 
-[[variant]]
-name = "duration_checked_div_8060100_1"
-property = "duration_checked_div_matches_model"
-injection = "patch"
+[tasks.bug]
+short_name = "duration_abs_saturation"
+invariant = "`Duration::abs` must return a non-negative duration whose magnitude equals `self`, saturating to `Duration::MAX` when `self.seconds == i64::MIN`; in particular `abs.subsec_nanoseconds() >= 0`."
+how_triggered = "The fix replaced `self.seconds.saturating_abs()` with a `match self.seconds.checked_abs()` that saturates to `Duration::MAX`. The variant patch reverts that change, so `abs` of a `Duration::new(i64::MIN, 0)` returns `(i64::MAX, 0)` but `abs` of `Duration::new(-5, -500_000_000)` leaks the negative nanoseconds field."
+
+[[tasks.tasks]]
+property = "DurationAbsMatchesModel"
+witnesses = [
+  { test_fn = "witness_duration_abs_case_min_zero_nanos" },
+  { test_fn = "witness_duration_abs_case_min_negative_nanos" },
+  { test_fn = "witness_duration_abs_case_negative_one_second" },
+]
+
+[[tasks]]
+mutations = ["duration_checked_div_8060100_1"]
+
+[tasks.source]
+repo = "https://github.com/time-rs/time"
+commits = ["80601003b3fbc993dc23e65d5c7c476970ba9053"]
+commit_subjects = ["Fix implementation of Duration::checked_div"]
+summary = "`Duration::checked_div` used `carry * 1_000_000_000 / rhs`, which truncated the remainder of both the seconds and the nanoseconds field; the fix reconstructs the quotient from both remainders so the answer drifts by at most one nanosecond instead of seconds."
+
+[tasks.injection]
+kind = "patch"
+files = ["time/src/duration.rs"]
+locations = [{ file = "time/src/duration.rs" }]
 patch = "patches/duration_checked_div_8060100_1.patch"
-source_commit = "80601003b3fbc993dc23e65d5c7c476970ba9053"
-witnesses = [
-    "witness_duration_checked_div_case_regression_one_ns",
-    "witness_duration_checked_div_case_regression_eight_seconds",
-    "witness_duration_checked_div_case_regression_negative",
-]
-frameworks = ["proptest", "quickcheck", "crabcheck", "hegel"]
-files = ["time/src/duration.rs"]
 
-[[variant]]
-name = "utc_offset_ordering_3a60ceb_1"
-property = "utc_offset_ordering"
-injection = "patch"
-patch = "patches/utc_offset_ordering_3a60ceb_1.patch"
-source_commit = "3a60ceba3f8677da34f28d56753a808812ea2a94"
+[tasks.bug]
+short_name = "duration_checked_div"
+invariant = "`Duration::checked_div(rhs)` must return a quotient `q` whose reconstruction `rhs * q` differs from `self` by at most `|rhs|` nanoseconds."
+how_triggered = "The fix rewrote the integer division so the remainder of `self.seconds % rhs` and the remainder of `self.nanoseconds % rhs` both contribute to the nanosecond field. The variant patch reverts to the old `carry * 1_000_000_000 / rhs` formula which truncates the remainder and produces a quotient that drifts by seconds rather than nanoseconds."
+
+[[tasks.tasks]]
+property = "DurationCheckedDivMatchesModel"
 witnesses = [
-    "witness_utc_offset_ordering_case_neg_pos",
-    "witness_utc_offset_ordering_case_negative_sixty_positive_sixty",
-    "witness_utc_offset_ordering_case_negative_zero",
-    "witness_utc_offset_ordering_case_pos_neg_seconds",
+  { test_fn = "witness_duration_checked_div_case_regression_one_ns" },
+  { test_fn = "witness_duration_checked_div_case_regression_eight_seconds" },
+  { test_fn = "witness_duration_checked_div_case_regression_negative" },
 ]
-frameworks = ["proptest", "quickcheck", "crabcheck", "hegel"]
+
+[[tasks]]
+mutations = ["utc_offset_ordering_3a60ceb_1"]
+
+[tasks.source]
+repo = "https://github.com/time-rs/time"
+commits = ["3a60ceba3f8677da34f28d56753a808812ea2a94"]
+commit_subjects = ["Fix ordering of UtcOffset"]
+summary = "`UtcOffset::cmp` reused the byte-packed `as_u32_for_equality` representation in which seconds are cast through `u8`, so `-1s` packed as `255` compared greater than `+1s` packed as `1`; the fix routes ordering through a signed packing that preserves the sign."
+
+[tasks.injection]
+kind = "patch"
 files = ["time/src/utc_offset.rs"]
+locations = [{ file = "time/src/utc_offset.rs" }]
+patch = "patches/utc_offset_ordering_3a60ceb_1.patch"
+
+[tasks.bug]
+short_name = "utc_offset_ordering"
+invariant = "For sub-minute offsets (`|a|, |b| <= 59` so `hours == minutes == 0`), `UtcOffset::cmp` must agree with comparison of the whole-second inputs. `is_positive` / `is_negative` must agree with the sign of the whole-second value."
+how_triggered = "The fix introduced `as_i32_for_comparison` (signed packed `(h,m,s)`) and rerouted `Ord::cmp`, `is_positive`, and `is_negative` through it. The variant patch reverts `Ord::cmp` to the byte-packed `as_u32_for_equality`, whose ordering flips across zero because seconds are cast through `u8` (`-1 -> 255` compares greater than `1 -> 1`). Within the `[-59, 59]` sub-minute domain the fixed packing degenerates to raw-seconds ordering, so the packed-`u32` fault is the only observable difference."
+
+[[tasks.tasks]]
+property = "UtcOffsetOrdering"
+witnesses = [
+  { test_fn = "witness_utc_offset_ordering_case_neg_pos" },
+  { test_fn = "witness_utc_offset_ordering_case_negative_sixty_positive_sixty" },
+  { test_fn = "witness_utc_offset_ordering_case_negative_zero" },
+  { test_fn = "witness_utc_offset_ordering_case_pos_neg_seconds" },
+]
