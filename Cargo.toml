@@ -26,9 +26,9 @@ num_threads = "0.1.2"
 powerfmt = { version = "0.2.0", default-features = false }
 # ETNA: PBT framework deps used by src/bin/etna.rs.
 proptest = "1.6"
-crabcheck = { path = "/Users/akeles/Programming/projects/PbtBenchmark/crabcheck" }
+crabcheck = { git = "https://github.com/alpaylan/crabcheck.git", branch = "main" }
 hegeltest = "0.3.7"
-qc_etna = { package = "quickcheck", path = "/Users/akeles/Programming/projects/PbtBenchmark/quickcheck", default-features = false, features = ["etna"] }
+qc_etna = { package = "quickcheck", git = "https://github.com/alpaylan/quickcheck.git", branch = "master", default-features = false, features = ["etna"] }
 quickcheck = { version = "1.0.3", default-features = false }
 quickcheck_macros = "1.0.0"
 rand08 = { package = "rand", version = "0.8.4", default-features = false }
