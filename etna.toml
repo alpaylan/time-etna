@@ -1,5 +1,6 @@
 name = "time"
 language = "rust"
+strategies = ["proptest", "quickcheck", "crabcheck", "hegel"]
 crate = "time"
 base_commit = "68739aacda2fbc2f004b291020d5352acb38137b"
 
