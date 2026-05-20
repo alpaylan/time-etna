@@ -107,6 +107,10 @@ path = "tests/integration/main.rs"
 name = "etna"
 path = "src/bin/etna.rs"
 
+[[bin]]
+name = "etna-faultloc"
+path = "src/bin/etna-faultloc.rs"
+
 [[test]]
 name = "etna_witnesses"
 path = "tests/etna_witnesses.rs"
